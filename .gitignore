@@ -1,0 +1,24 @@
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+
+# Data and Outputs
+data/*.csv
+plots/*.png
+
+# OS and IDE files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

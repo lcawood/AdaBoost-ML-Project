@@ -1,0 +1,21 @@
+project:
+  name: "AdaBoost Car Service Analysis"
+  random_state: 42
+
+data_generation:
+  n_samples: 10000
+  test_size: 0.2
+  output_file: "data/car_service_bookings.csv"
+
+model:
+  n_estimators: 50
+  learning_rate: 1.0
+  max_depth: 3
+
+paths:
+  plots_dir: "plots"
+  logs_dir: "logs"
+
+shap:
+  n_samples: 500
+  max_background_samples: 100
