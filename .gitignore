@@ -22,3 +22,7 @@ plots/*.png
 .DS_Store
 Thumbs.db
 
+# Logs
+logs/
+*.log
+
