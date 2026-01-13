@@ -55,7 +55,21 @@ def generate_car_service_data(output_path: Optional[str] = None) -> pd.DataFrame
     df = pd.DataFrame(X, columns=feature_names)
     
     def rescale(series: pd.Series, min_val: float, max_val: float) -> pd.Series:
-        """Helper to rescale a column to a range [min, max]."""
+        """
+        Transforms abstract mathematical values into realistic business data ranges.
+
+        Why is this necessary?
+        Our data generator (make_classification) produces raw patterns and numbers that don't 
+        look like real-world values (e.g., a 'Vehicle Age' could be -1.5). 
+
+        This function maps those generic patterns onto realistic scales (like 0 to 20 years) 
+        so the dataset looks like actual car service records, while preserving the 
+        mathematical logic the model needs to learn.
+
+        Example:
+            Raw AI output range [-2.0, 2.0] is mapped to [0, 100] for 'Age'.
+            A raw value of 0.0 becomes a realistic age of 50.
+        """
         s_min, s_max = series.min(), series.max()
         if s_max == s_min:
             return pd.Series(np.full_like(series, (min_val + max_val) / 2))

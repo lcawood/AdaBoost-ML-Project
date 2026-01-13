@@ -50,7 +50,9 @@ def generate_business_plots(data_path: Optional[str] = None, plots_dir: Optional
     plt.figure(figsize=(10, 6))
     bars = plt.bar(decile_stats['interest_decile'], decile_stats['booking_conversion'], color='#2ca02c', alpha=0.8)
     
-    plt.title('Validation: Real-World Conversion Rate by Interest Tier', fontsize=14, pad=15)
+    plt.suptitle('Validation: Real-World Conversion Rate by Interest Tier', fontsize=14)
+    plt.title("Actual booking rates observed within each decile of the model's promotional interest score", 
+              fontsize=10, style='italic', pad=10)
     plt.xlabel('Promotional Interest Score (Decile 0=Low, 9=High)', fontsize=11)
     plt.ylabel('Conversion Rate (Actual %)', fontsize=11)
     plt.xticks(decile_stats['interest_decile'])
@@ -60,8 +62,8 @@ def generate_business_plots(data_path: Optional[str] = None, plots_dir: Optional
         height = bar.get_height()
         plt.text(bar.get_x() + bar.get_width()/2., height + 0.01, f'{height:.1%}', ha='center', fontsize=10)
 
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'business_conversion_by_interest.png')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'business_conversion_by_interest.png', dpi=300)
     plt.close()
 
     # --- 2. Distribution Plot ---
@@ -71,13 +73,15 @@ def generate_business_plots(data_path: Optional[str] = None, plots_dir: Optional
     plt.hist(df[df['booking_conversion']==0]['promotional_interest'], label='Did NOT Book', color='gray', **kwargs)
     plt.hist(df[df['booking_conversion']==1]['promotional_interest'], label='DID Book', color='blue', **kwargs)
     
-    plt.title('Customer Concentration by Engagement Score', fontsize=14, pad=15)
+    plt.suptitle('Customer Concentration by Engagement Score', fontsize=14)
+    plt.title("Density distribution showing how promotional interest scores differ between customers who booked vs. those who didn't", 
+              fontsize=10, style='italic', pad=10)
     plt.xlabel('Promotional Interest Score (0.0 to 1.0)', fontsize=11)
     plt.ylabel('Density (Relative Concentration)', fontsize=11)
     plt.legend()
     plt.grid(axis='y', linestyle='--', alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'business_interest_distribution.png')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'business_interest_distribution.png', dpi=300)
     plt.close()
 
     logger.info(f"Business plots saved to {plots_dir}")

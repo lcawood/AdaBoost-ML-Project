@@ -1,5 +1,15 @@
 import pandas as pd
 import numpy as np
+
+# Bridge the gap between different versions of the math library (NumPy).
+# Some tools we use expect older names for functions that were recently renamed in NumPy 2.0.
+# If the old names are missing, we manually point them to the new names to prevent crashes.
+if not hasattr(np, 'trapz'):
+    np.trapz = np.trapezoid
+
+if not hasattr(np, 'in1d'):
+    np.in1d = np.isin
+
 import matplotlib.pyplot as plt
 import yaml
 from pathlib import Path
@@ -30,6 +40,9 @@ def train_and_visualize(data_path: Optional[str] = None, plots_dir: Optional[str
         data_path: Path to the input CSV data.
         plots_dir: Directory where evaluation plots will be saved.
     """
+    
+    # Decide where to find the data and where to save the results. 
+    # If we weren't given specific paths, use the default locations from our settings.
     config = load_config()
     project_root = Path(__file__).parent.parent
     
@@ -94,10 +107,10 @@ def plot_feature_importances(clf: AdaBoostClassifier, feature_names: List[str], 
 
     plt.figure(figsize=(12, 7))
     bars = plt.bar(range(len(importances)), importances[indices], align="center", color='#1f77b4')
-    plt.title("AdaBoost Feature Importances", fontsize=14, pad=20)
+    plt.suptitle("AdaBoost Feature Importances", fontsize=14)
+    plt.title("Top features contributing to the model's decision-making process", 
+              fontsize=10, style='italic', pad=10)
     plt.ylabel("Importance Score")
-    plt.figtext(0.5, 0.90, "Top features contributing to the model's decision-making process", 
-                ha='center', fontsize=10, style='italic')
     plt.xticks(range(len(importances)), [feature_names[i] for i in indices], rotation=45, ha='right')
     
     for bar in bars:
@@ -105,8 +118,8 @@ def plot_feature_importances(clf: AdaBoostClassifier, feature_names: List[str], 
         plt.text(bar.get_x() + bar.get_width()/2., height, f'{height:.3f}',
                  ha='center', va='bottom', fontsize=9)
 
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'feature_importances.png')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'feature_importances.png', dpi=300)
     plt.close()
 
 def perform_cross_validation(clf: AdaBoostClassifier, X: pd.DataFrame, y: pd.Series, plots_dir: Path, config: dict) -> None:
@@ -140,12 +153,15 @@ def perform_cross_validation(clf: AdaBoostClassifier, X: pd.DataFrame, y: pd.Ser
     mean_tpr = np.mean(tprs, axis=0)
     mean_tpr[-1] = 1.0
     mean_auc = auc(mean_fpr, mean_tpr)
-    ax.plot(mean_fpr, mean_tpr, color='b', label=f'Mean ROC (AUC = {mean_auc:.2f} $\pm$ {np.std(aucs):.2f})', lw=2, alpha=.8)
+    ax.plot(mean_fpr, mean_tpr, color='b', label=f'Mean ROC (AUC = {mean_auc:.2f} $\\pm$ {np.std(aucs):.2f})', lw=2, alpha=.8)
     
-    ax.set(xlabel='False Positive Rate', ylabel='True Positive Rate', title='Receiver Operating Characteristic (ROC)')
+    ax.set(xlabel='False Positive Rate', ylabel='True Positive Rate')
+    plt.suptitle('Receiver Operating Characteristic (ROC)', fontsize=14)
+    plt.title("Trade-off between True Positive Rate and False Positive Rate across cross-validation folds.", 
+              fontsize=10, style='italic', pad=10)
     ax.legend(loc="lower right")
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'cv_roc_curve.png')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'cv_roc_curve.png', dpi=300)
     plt.close()
 
     # Aggregate Confusion Matrix
@@ -153,9 +169,11 @@ def perform_cross_validation(clf: AdaBoostClassifier, X: pd.DataFrame, y: pd.Ser
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["No Booking", "Booked"])
     plt.figure(figsize=(8, 6))
     disp.plot(cmap=plt.cm.Blues, values_format='d', ax=plt.gca())
-    plt.title("Aggregate Cross-Validation Confusion Matrix")
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'cv_confusion_matrix.png')
+    plt.suptitle("Aggregate Cross-Validation Confusion Matrix", fontsize=14)
+    plt.title("Comparison of actual outcomes vs. model predictions (aggregating all folds)", 
+              fontsize=10, style='italic', pad=10)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'cv_confusion_matrix.png', dpi=300)
     plt.close()
 
 def plot_learning_curve_func(clf: AdaBoostClassifier, X: pd.DataFrame, y: pd.Series, plots_dir: Path) -> None:
@@ -168,13 +186,15 @@ def plot_learning_curve_func(clf: AdaBoostClassifier, X: pd.DataFrame, y: pd.Ser
     plt.figure(figsize=(10, 6))
     plt.plot(train_sizes, np.mean(train_scores, axis=1), 'o-', color="r", label="Training score")
     plt.plot(train_sizes, np.mean(test_scores, axis=1), 'o-', color="g", label="Cross-validation score")
-    plt.title("Learning Curve")
+    plt.suptitle("Learning Curve", fontsize=14)
+    plt.title("Model training and validation accuracy scores as the training dataset size increases", 
+              fontsize=10, style='italic', pad=10)
     plt.xlabel("Training examples")
     plt.ylabel("Accuracy Score")
     plt.legend(loc="best")
     plt.grid()
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'cv_learning_curve.png')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'cv_learning_curve.png', dpi=300)
     plt.close()
 
 def generate_shap_analysis(clf: AdaBoostClassifier, X_test: pd.DataFrame, feature_names: List[str], plots_dir: Path, config: dict) -> None:
@@ -196,17 +216,21 @@ def generate_shap_analysis(clf: AdaBoostClassifier, X_test: pd.DataFrame, featur
     # SHAP Summary Plot
     plt.figure(figsize=(10, 8))
     shap.summary_plot(shap_values.values, X_explain, show=False)
-    plt.title("SHAP Summary Plot", fontsize=14, pad=20)
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'shap_summary.png')
+    plt.suptitle("SHAP Summary Plot", fontsize=14)
+    plt.title("Visualizing how each feature's value pushes the prediction towards 'Booked' (right) or 'No Booking' (left)", 
+              fontsize=10, style='italic', pad=10)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'shap_summary.png', dpi=300)
     plt.close()
 
     # SHAP Feature Importance (Bar)
     plt.figure(figsize=(10, 8))
     shap.summary_plot(shap_values.values, X_explain, plot_type="bar", show=False)
-    plt.title("SHAP Feature Importance (Mean |SHAP Value|)", fontsize=14, pad=20)
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'shap_feature_importance.png')
+    plt.suptitle("SHAP Feature Importance (Mean |SHAP Value|)", fontsize=14)
+    plt.title("Average magnitude of impact each feature has on the model's output", 
+              fontsize=10, style='italic', pad=10)
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'shap_feature_importance.png', dpi=300)
     plt.close()
 
     analyze_probability_impact(shap_values.values, X_explain, feature_names, plots_dir)
@@ -228,12 +252,14 @@ def analyze_probability_impact(shap_values: np.ndarray, X_explain: pd.DataFrame,
     plt.figure(figsize=(10, 6))
     plt.scatter(X_explain[target_feature], prob_lift * 100, alpha=0.5, color='purple')
     plt.axhline(0, color='black', linestyle='--', alpha=0.3)
-    plt.title(f"Quantitative Impact: {target_feature}", fontsize=14)
+    plt.suptitle(f"Quantitative Impact: {target_feature}", fontsize=14)
+    plt.title("Estimated percentage point increase in booking probability associated with higher feature scores", 
+              ha='center', fontsize=10, style='italic', pad=10)
     plt.xlabel(f"Raw {target_feature} Score", fontsize=11)
     plt.ylabel("Booking Probability Lift (Estimated % Points)", fontsize=11)
     plt.grid(alpha=0.2)
-    plt.tight_layout()
-    plt.savefig(plots_dir / 'shap_probability_lift.png')
+    plt.tight_layout(rect=[0, 0, 1, 0.95])
+    plt.savefig(plots_dir / 'shap_probability_lift.png', dpi=300)
     plt.close()
 
 if __name__ == "__main__":

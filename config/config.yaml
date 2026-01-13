@@ -8,8 +8,16 @@ data_generation:
   output_file: "data/car_service_bookings.csv"
 
 model:
+  # The number of weak learners (trees) to train.
+  # Why 50? A balanced starting point to reduce error without excessive training time.
   n_estimators: 50
+
+  # Weight applied to each classifier. 1.0 means full correction of previous errors.
+  # Why 1.0? Standard baseline. Lowering this requires increasing n_estimators significantly.
   learning_rate: 1.0
+
+  # Maximum depth of the individual trees.
+  # Why 3? Keeps learners "weak" to prevent overfitting, but deep enough to capture feature interactions.
   max_depth: 3
 
 paths:
