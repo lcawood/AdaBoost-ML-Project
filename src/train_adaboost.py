@@ -22,6 +22,7 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score
 )
 import shap
+import joblib
 from utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -232,6 +233,15 @@ def generate_shap_analysis(clf: AdaBoostClassifier, X_test: pd.DataFrame, featur
     plt.tight_layout(rect=[0, 0, 1, 0.95])
     plt.savefig(plots_dir / 'shap_feature_importance.png', dpi=300)
     plt.close()
+
+    # Cache SHAP values for later interpretation
+    project_root = Path(__file__).parent.parent
+    cache_path = project_root / 'data' / 'shap_values_data.pkl'
+    try:
+        joblib.dump({'shap_values': shap_values, 'data': X_explain}, cache_path)
+        logger.info(f"SHAP values cached to {cache_path}")
+    except Exception as e:
+        logger.warning(f"Failed to cache SHAP values: {e}")
 
     analyze_probability_impact(shap_values.values, X_explain, feature_names, plots_dir)
 

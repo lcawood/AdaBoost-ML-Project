@@ -19,6 +19,7 @@ The objective is to quantify the impact of specific features—such as `promotio
 │   │   └── logger_config.py         # Standardized logging utility
 │   ├── data_generator.py            # Synthetic data generation logic
 │   ├── train_adaboost.py            # Training, validation, and SHAP analysis
+│   ├── interpret_shap.py            # SHAP probability interpretation & business insights
 │   └── visualize_business_impact.py # Business-centric validation plots
 ├── run_pipeline.bat                 # Windows automation script
 ├── run_pipeline.sh                  # Linux/Mac automation script
@@ -65,6 +66,24 @@ chmod +x run_pipeline.sh
 ./run_pipeline.sh
 ```
 
+### 3. Generate Business Insights
+After training the model, run the interpretation script to generate a plain-English report on feature impacts:
+```bash
+python src/interpret_shap.py
+```
+**Key Features:**
+*   **Efficiency**: Loads cached values from `train_adaboost.py` to generate insights instantly.
+*   **Human-Readable Insights**: Explains probability impact in terms of a "typical customer" (e.g., "shifts probability from 47% to 61%").
+*   **Report**: Creates `logs/shap_business_insight.txt` with detailed probability analysis and strategic recommendations.
+
+**Sample Output:**
+```text
+Feature: promotional_interest
+  - Impact Analysis: For a typical customer (base probability 47%), when this feature is favorable, it shifts the booking likelihood to **61%** (+14.3%).
+  - Trend: Higher values increase booking probability.
+  - Business Recommendation: A/B test aggressive discounts vs. value-add offers for high-interest segments.
+```
+
 ---
 
 ## 🔍 Key Findings & Visual Analysis
@@ -80,6 +99,7 @@ All visualizations are generated during the pipeline execution and saved to the 
 - **SHAP Summary (`shap_summary.png`)**: A beeswarm plot showing how high or low values of each feature (like `promotional_interest`) push the model's prediction toward or away from a booking.
 - **Probability Lift (`shap_probability_lift.png`)**: Quantifies the business impact by showing exactly how many percentage points of booking probability are added (or removed) based on a customer's engagement score.
 - **Feature Importance (`feature_importances.png`)**: A global view of which variables the AdaBoost algorithm found most useful for its decision trees.
+- **Business Insight Report (`logs/shap_business_insight.txt`)**: A generated text report that translates technical SHAP values into "typical customer" probability shifts and actionable business recommendations.
 
 ### 3. Empirical Validation (`src/visualize_business_impact.py`)
 - **Conversion by Tier (`business_conversion_by_interest.png`)**: A bar chart grouping customers into deciles based on interest. It validates the model by showing that real-world conversion rates scale linearly with the predicted interest scores.
